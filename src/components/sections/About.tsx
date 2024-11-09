@@ -49,14 +49,14 @@ export default function About() {
             About
           </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-4 md:space-y-6 px-4 md:px-0"
             >
-              <p className="text-white/80 text-lg leading-relaxed">
+              <p className="text-base md:text-lg leading-relaxed">
                 A passionate self-taught developer with a year of hands-on experience in web development. 
                 While I chose to leave university to pursue practical experience, 
                 I&apos;ve dedicated myself to mastering modern web technologies and building real-world solutions.

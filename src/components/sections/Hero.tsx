@@ -60,29 +60,29 @@ export default function Hero() {
                 transition={{ duration: 0.8 }}
                 className="overflow-hidden"
               >
-                <h1 className="text-[15vw] font-bold leading-none tracking-tighter">
-                  <motion.span 
-                    className="inline-block"
-                    animate={{ 
-                      y: isHovered ? -20 : 0,
-                      color: isHovered ? '#fff' : '#888'
-                    }}
-                  >
-                    NODE
-                  </motion.span>
-                </h1>
-              </motion.div>
+<h1 className="text-[12vw] md:text-[15vw] font-bold leading-none tracking-tighter">
+  <motion.span 
+    className="inline-block"
+    animate={{ 
+      y: isHovered ? -20 : 0,
+      color: isHovered ? '#fff' : '#888'
+    }}
+  >
+    NODE
+  </motion.span>
+</h1>
+</motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 }}
-                className="overflow-hidden -mt-8"
-              >
-                <h2 className="text-[10vw] font-bold leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500">
-                  PROJECT
-                </h2>
-              </motion.div>
+<motion.div
+  initial={{ opacity: 0, y: 100 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.1 }}
+  className="overflow-hidden -mt-4 md:-mt-8"
+>
+  <h2 className="text-[8vw] md:text-[10vw] font-bold leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500">
+    PROJECT
+  </h2>
+</motion.div>
 
               {/* Decorative Elements */}
               <div className="absolute -inset-40 -z-10">

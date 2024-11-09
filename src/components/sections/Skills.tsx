@@ -55,9 +55,9 @@ export default function Skills() {
             Skills
           </motion.h2>
 
-          <div className="flex flex-col lg:flex-row gap-10">
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
             {/* Category Selection */}
-            <div className="lg:w-1/3">
+            <div className="w-full lg:w-1/3">
               <div className="sticky top-20 space-y-4">
                 {categories.map((category, index) => (
                   <motion.button
@@ -80,40 +80,32 @@ export default function Skills() {
             </div>
 
             {/* Skills Display */}
-            <div className="lg:w-2/3">
-              <motion.div
-                key={activeCategory}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-              >
-                {categories[activeCategory].skills.map((skill, index) => (
+            <div className="w-full lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {categories[activeCategory].skills.map((skill, index) => (
+                <motion.div
+                  key={skill}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="relative group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-indigo-600/10 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
                   <motion.div
-                    key={skill}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="relative group"
+                    whileHover={{ scale: 1.02 }}
+                    className="relative bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-xl"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-indigo-600/10 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="relative bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-xl"
-                    >
-                      <h3 className="text-xl font-bold text-white mb-2">{skill}</h3>
-                      <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-violet-500 to-indigo-500"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: '100%' }}
-                          transition={{ duration: 1.5, ease: "easeOut" }}
-                        />
-                      </div>
-                    </motion.div>
+                    <h3 className="text-xl font-bold text-white mb-2">{skill}</h3>
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-violet-500 to-indigo-500"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: '100%' }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                      />
+                    </div>
                   </motion.div>
-                ))}
-              </motion.div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </motion.div>

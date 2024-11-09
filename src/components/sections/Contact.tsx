@@ -76,13 +76,13 @@ export default function Contact() {
           className="max-w-4xl mx-auto"
           style={{ y }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
             {/* Left Side - Contact Info */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-4 md:space-y-6"
             >
               <p className="text-white/80 text-lg leading-relaxed">
                 Ready to start a project together? Send me a message and let&apos;s create something amazing.

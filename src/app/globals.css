@@ -34,3 +34,22 @@
     scroll-behavior: auto;
   }
 }
+
+/* Add these at the end of your existing file */
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  h1, h2 {
+    word-break: break-word;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
