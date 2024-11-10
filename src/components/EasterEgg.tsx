@@ -1,86 +1,57 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
 
-const SEQUENCE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-const GRID_SIZE = 40;
-const CELL_SIZE = 15;
+type Position = { x: number; y: number };
+type Direction = 'up' | 'down' | 'left' | 'right';
 
-interface Player {
-  position: { x: number; y: number };
-  direction: 'up' | 'down' | 'left' | 'right';
-  color: string;
-  trail: Array<{ x: number; y: number }>;
+interface GameState {
+  position: Position;
+  direction: Direction;
+  trail: Position[];
 }
 
-export default function EasterEgg() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [userSequence, setUserSequence] = useState<string[]>([]);
-  const [player, setPlayer] = useState<Player>({
-    position: { x: 10, y: 20 },
-    direction: 'right',
-    color: 'from-violet-500 to-indigo-500',
-    trail: []
-  });
-  const [ai, setAi] = useState<Player>({
-    position: { x: 30, y: 20 },
-    direction: 'left',
-    color: 'from-red-500 to-orange-500',
-    trail: []
-  });
+interface EasterEggProps {
+  isVisible: boolean;
+  setIsVisible: (visible: boolean) => void;
+}
+
+export default function EasterEgg({ isVisible, setIsVisible }: EasterEggProps) {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
+  const [player, setPlayer] = useState<GameState>({
+    position: { x: 5, y: 5 },
+    direction: 'right',
+    trail: []
+  });
+  const [ai, setAi] = useState<GameState>({
+    position: { x: 15, y: 15 },
+    direction: 'left',
+    trail: []
+  });
 
-  // Game initialization
-  useEffect(() => {
-    if (isVisible && !gameOver) {
-      setPlayer({
-        position: { x: 10, y: 20 },
-        direction: 'right',
-        color: 'from-violet-500 to-indigo-500',
-        trail: []
-      });
-      setAi({
-        position: { x: 30, y: 20 },
-        direction: 'left',
-        color: 'from-red-500 to-orange-500',
-        trail: []
-      });
-      setScore(0);
-    }
-  }, [isVisible, gameOver]);
-
-  // Game loop
   useEffect(() => {
     if (!isVisible || gameOver) return;
 
-    const movePlayer = (player: Player): Player => {
-      const newPosition = { ...player.position };
-      switch (player.direction) {
-        case 'up': newPosition.y--; break;
-        case 'down': newPosition.y++; break;
-        case 'left': newPosition.x--; break;
-        case 'right': newPosition.x++; break;
+    const movePlayer = (state: GameState): GameState => {
+      const newPos = { ...state.position };
+      switch (state.direction) {
+        case 'up': newPos.y = (newPos.y - 1 + 20) % 20; break;
+        case 'down': newPos.y = (newPos.y + 1) % 20; break;
+        case 'left': newPos.x = (newPos.x - 1 + 20) % 20; break;
+        case 'right': newPos.x = (newPos.x + 1) % 20; break;
       }
       return {
-        ...player,
-        position: newPosition,
-        trail: [...player.trail, player.position]
+        ...state,
+        position: newPos,
+        trail: [...state.trail, state.position].slice(-5)
       };
     };
 
-    const checkCollision = (pos: { x: number; y: number }, trails: Array<{ x: number; y: number }>, currentTrail: Array<{ x: number; y: number }>) => {
-      // Check boundaries
-      if (pos.x < 0 || pos.x >= GRID_SIZE || pos.y < 0 || pos.y >= GRID_SIZE) {
-        return true;
-      }
-
-      // Check collision with other trails
-      return trails.some(t => t.x === pos.x && t.y === pos.y) ||
-        // Check collision with own trail (excluding the last few positions to prevent immediate self-collision)
-        currentTrail.slice(0, -3).some(t => t.x === pos.x && t.y === pos.y);
+    const checkCollision = (pos: Position, trails: Position[], selfTrail: Position[]) => {
+      return [...trails, ...selfTrail].some(p => p.x === pos.x && p.y === pos.y);
     };
 
     const gameLoop = setInterval(() => {
@@ -101,14 +72,7 @@ export default function EasterEgg() {
         const newAi = movePlayer(prev);
         const allTrails = [...player.trail];
         
-        if (checkCollision(newAi.position, allTrails, prev.trail)) {
-          setGameOver(true);
-          if (score > highScore) setHighScore(score);
-          return prev;
-        }
-        
-        // Simple AI logic
-        const directions: ('up' | 'down' | 'left' | 'right')[] = ['up', 'down', 'left', 'right'];
+        const directions: Direction[] = ['up', 'down', 'left', 'right'];
         const possibleMoves = directions.filter(dir => {
           const testPos = { ...newAi.position };
           switch (dir) {
@@ -131,54 +95,6 @@ export default function EasterEgg() {
     return () => clearInterval(gameLoop);
   }, [isVisible, gameOver, score, highScore, ai.trail, player.trail]);
 
-  // Key handlers
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isVisible || gameOver) return;
-
-      setPlayer(prev => {
-        const newDirection = 
-          e.key === 'ArrowUp' ? 'up' :
-          e.key === 'ArrowDown' ? 'down' :
-          e.key === 'ArrowLeft' ? 'left' :
-          e.key === 'ArrowRight' ? 'right' :
-          prev.direction;
-
-        return { ...prev, direction: newDirection };
-      });
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible, gameOver]);
-
-  // Keep the sequence detection from the original
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const key = e.key;
-      const newSequence = [...userSequence, key];
-      
-      if (newSequence.length > SEQUENCE.length) {
-        newSequence.shift();
-      }
-      setUserSequence(newSequence);
-
-      const match = SEQUENCE.every((value, index) => 
-        newSequence[index]?.toLowerCase() === value.toLowerCase()
-      );
-
-      if (match && newSequence.length === SEQUENCE.length) {
-        setIsVisible(true);
-        setUserSequence([]);
-        setScore(0);
-        setGameOver(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [userSequence]);
-
   return (
     <AnimatePresence>
       {isVisible && (
@@ -186,102 +102,78 @@ export default function EasterEgg() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/95 to-indigo-900/95" />
-          
-          <div className="relative w-[600px] h-[600px] bg-black/40 backdrop-blur-xl border border-violet-500/50 rounded-xl overflow-hidden">
-            {/* Game grid */}
-            <div className="absolute inset-0 grid"
-                 style={{ 
-                   gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`,
-                   gap: '1px',
-                   background: 'rgba(255,255,255,0.1)'
-                 }}>
-              {/* Player trail */}
-              {player.trail.map((pos, i) => (
-                <motion.div
-                  key={`player-${i}`}
-                  className={`absolute bg-gradient-to-r ${player.color}`}
-                  style={{
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    left: pos.x * CELL_SIZE,
-                    top: pos.y * CELL_SIZE
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-              ))}
-
-              {/* AI trail */}
-              {ai.trail.map((pos, i) => (
-                <motion.div
-                  key={`ai-${i}`}
-                  className={`absolute bg-gradient-to-r ${ai.color}`}
-                  style={{
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    left: pos.x * CELL_SIZE,
-                    top: pos.y * CELL_SIZE
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-              ))}
-
-              {/* Current positions */}
-              <motion.div
-                className={`absolute bg-gradient-to-r ${player.color}`}
-                style={{
-                  width: CELL_SIZE,
-                  height: CELL_SIZE,
-                  left: player.position.x * CELL_SIZE,
-                  top: player.position.y * CELL_SIZE
-                }}
-              />
-              <motion.div
-                className={`absolute bg-gradient-to-r ${ai.color}`}
-                style={{
-                  width: CELL_SIZE,
-                  height: CELL_SIZE,
-                  left: ai.position.x * CELL_SIZE,
-                  top: ai.position.y * CELL_SIZE
-                }}
-              />
-            </div>
-
-            {gameOver && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
-                <h3 className="text-3xl font-bold text-white mb-4">Game Over!</h3>
-                <p className="text-white mb-2">Score: {score}</p>
-                <p className="text-white mb-4">High Score: {highScore}</p>
-                <button
-                  onClick={() => setGameOver(false)}
-                  className="px-6 py-3 bg-violet-500/20 rounded-lg hover:bg-violet-500/40 transition-colors text-white"
-                >
-                  Play Again
-                </button>
-              </div>
-            )}
-
-            {/* UI */}
-            <div className="absolute top-4 right-4 text-white font-bold">
-              Score: {score}
-            </div>
-
+          <div className="relative max-w-2xl w-full mx-4">
             <button
               onClick={() => setIsVisible(false)}
-              className="absolute top-4 left-4 px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20 transition-colors"
+              className="absolute -top-12 right-0 text-white/60 hover:text-white"
             >
-              Exit (Esc)
+              Close
             </button>
 
-            {!gameOver && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60">
-                Use arrow keys to change direction
+            <div className="bg-black/80 p-8 rounded-xl border border-white/10">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {gameOver ? 'Game Over!' : 'TRON Light Cycles'}
+                </h3>
+                <div className="flex justify-center gap-8 text-white/60">
+                  <p>Score: {score}</p>
+                  <p>High Score: {highScore}</p>
+                </div>
               </div>
-            )}
+
+              <div className="aspect-square w-full bg-black/60 rounded-lg border border-white/10 relative overflow-hidden">
+                {/* Player */}
+                <motion.div
+                  className="absolute w-2 h-2 bg-violet-500"
+                  style={{
+                    x: player.position.x * 20,
+                    y: player.position.y * 20,
+                  }}
+                />
+                {player.trail.map((pos, i) => (
+                  <motion.div
+                    key={`player-${i}`}
+                    className="absolute w-2 h-2 bg-violet-500/30"
+                    style={{
+                      x: pos.x * 20,
+                      y: pos.y * 20,
+                    }}
+                  />
+                ))}
+
+                {/* AI */}
+                <motion.div
+                  className="absolute w-2 h-2 bg-indigo-500"
+                  style={{
+                    x: ai.position.x * 20,
+                    y: ai.position.y * 20,
+                  }}
+                />
+                {ai.trail.map((pos, i) => (
+                  <motion.div
+                    key={`ai-${i}`}
+                    className="absolute w-2 h-2 bg-indigo-500/30"
+                    style={{
+                      x: pos.x * 20,
+                      y: pos.y * 20,
+                    }}
+                  />
+                ))}
+              </div>
+
+              {gameOver && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={() => setIsVisible(false)}
+                    className="px-6 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-lg transition-colors"
+                  >
+                    Play Again
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
       )}
